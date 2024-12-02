@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de CPF</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        header h1 {
+            font-size: 30px;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+            margin-top: 120px;
+            position: relative;
+            z-index: 1;
+        }
+
+        h2 {
+            text-align: center;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        label {
+            font-size: 16px;
+            color: #555;
+        }
+
+        input[type="text"], input[type="button"] {
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            outline: none;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        input[type="button"] {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        input[type="text"]:focus, input[type="button"]:hover {
+            border-color: #4CAF50;
+            box-shadow: 0 0 10px rgba(0, 176, 80, 0.5);
+        }
+
+        input[type="button"]:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        input[type="button"]:active {
+            background-color: #388e3c;
+        }
+
+        .feedback {
+            font-size: 16px;
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .feedback.valid {
+            color: #4CAF50;
+        }
+
+        .feedback.invalid {
+            color: #f44336;
+        }
+
+        .check-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+
+        .feedback.show {
+            display: block;
+            opacity: 1;
+        }
+
+        .copy-btn {
+            background-color: #008CBA;
+            border: none;
+            padding: 12px;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background-color: #007B9A;
+        }
+
+        .copied {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Gerador de CPF</h1>
+</header>
+
+<div class="container">
+    <h2>Gerador de CPF</h2>
+    <form name="form_main">
+        <label for="numero">Número do CPF:</label>
+        <input name="numero" id="numero" size="20" type="text" disabled />
+        <input name="button" value="Gerar CPF" onclick="return gerarCPF()" type="button">
+        <button type="button" class="copy-btn" id="copyButton" onclick="copiarCPF()">Copiar CPF</button>
+    </form>
+
+    <h2>Validador de CPF</h2>
+    <form name="form_validator">
+        <label for="cpf_input">Digite um CPF para validar:</label>
+        <input name="cpf_input" id="cpf_input" size="20" type="text" />
+        <input name="validate_button" value="Validar CPF" onclick="return validarCPF()" type="button">
+    </form>
+
+    <p id="cpf_feedback" class="feedback"></p>
+</div>
+
+<script>
+    function numeroAleatorio(max) {
+        return Math.floor(Math.random() * max);
+    }
+
+    function calcularModulo(dividendo, divisor) {
+        return dividendo % divisor;
+    }
+
+    function gerarCPF() {
+        const digitos = 9;
+        let numeros = [];
+
+        for (let i = 0; i < digitos; i++) {
+            numeros.push(numeroAleatorio(10));
+        }
+
+        // Calcular o primeiro dígito verificador
+        let soma1 = 0;
+        let pesos1 = [10, 9, 8, 7, 6, 5, 4, 3, 2];
+        for (let i = 0; i < 9; i++) {
+            soma1 += numeros[i] * pesos1[i];
+        }
+        let digito1 = 11 - (soma1 % 11);
+        if (digito1 >= 10) digito1 = 0;
+
+        // Calcular o segundo dígito verificador
+        let soma2 = 0;
+        let pesos2 = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2];
+        for (let i = 0; i < 9; i++) {
+            soma2 += numeros[i] * pesos2[i];
+        }
+        soma2 += digito1 * 2;
+        let digito2 = 11 - (soma2 % 11);
+        if (digito2 >= 10) digito2 = 0;
+
+        let cpfGerado = `${numeros[0]}${numeros[1]}${numeros[2]}${numeros[3]}${numeros[4]}${numeros[5]}${numeros[6]}${numeros[7]}${numeros[8]}${digito1}${digito2}`;
+
+        document.form_main.numero.value = cpfGerado;
+
+        showFeedback("CPF gerado com sucesso!", "valid", "check");
+
+        return false;
+
+        input.a
+    }
+
+    function validarCPF() {
+        let cpf = document.form_validator.cpf_input.value.replace(/[^\d]/g, '');
+        if (cpf.length !== 11) {
+            showFeedback("CPF inválido. O CPF deve conter 11 dígitos.", "invalid", "close");
+            return false;
+        }
+
+        let soma1 = 0;
+        let soma2 = 0;
+        let digito1, digito2;
+        let pesos1 = [10, 9, 8, 7, 6, 5, 4, 3, 2];
+        let pesos2 = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2];
+
+        for (let i = 0; i < 9; i++) {
+            soma1 += cpf[i] * pesos1[i];
+        }
+        digito1 = 11 - (soma1 % 11);
+        if (digito1 >= 10) digito1 = 0;
+
+        for (let i = 0; i < 9; i++) {
+            soma2 += cpf[i] * pesos2[i];
+        }
+        soma2 += digito1 * 2;
+        digito2 = 11 - (soma2 % 11);
+        if (digito2 >= 10) digito2 = 0;
+
+        if (cpf[9] == digito1 && cpf[10] == digito2) {
+            showFeedback("CPF válido!", "valid", "check");
+        } else {
+            showFeedback("CPF inválido!", "invalid", "close");
+        }
+
+        return false;
+    }
+
+    function showFeedback(message, status, icon) {
+        const feedback = document.getElementById('cpf_feedback');
+        feedback.textContent = message;
+        feedback.className = `feedback show ${status}`;
+        feedback.innerHTML = `<span class="check-icon">${icon === "check" ? '✔' : '✖'}</span>${message}`;
+    }
+
+    function copiarCPF() {
+        const cpf = document.form_main.numero.value;
+        if (cpf) {
+            navigator.clipboard.writeText(cpf)
+                .then(() => {
+                    const copyButton = document.getElementById('copyButton');
+                    copyButton.textContent = "Copiado!";
+                    copyButton.classList.add("copied");
+                    setTimeout(() => {
+                        copyButton.textContent = "Copiar CPF";
+                        copyButton.classList.remove("copied");
+                    }, 2000);
+                })
+                .catch(err => console.error('Erro ao copiar o CPF:', err));
+        }
+    }
+</script>
+
+</body>
+</html>
